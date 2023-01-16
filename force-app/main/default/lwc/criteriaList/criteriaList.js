@@ -1,10 +1,13 @@
 import { LightningElement,api ,wire } from 'lwc';
 import getCriterias from '@salesforce/apex/CriteriaController.getCriterias'
+import getAllAccountFieldsLabels from '@salesforce/apex/CriteriaController.getAllAccountFieldsLabels';
 
 const columns = [
-    { label: 'Field Name', fieldName: 'FieldName__c', type: 'text', editable: true },
-    { label: 'Operation', fieldName: 'Operation__c', type: 'text', editable: true },
-    { label: 'Value', fieldName: 'Value__c', type: 'text', editable: true },
+/*     { label: 'Id', fieldName: 'Id', type: 'text' },
+    { label: 'Criteria Name', fieldName: 'Name', type: 'text' }, */
+    { label: 'Criteria Name', fieldName: 'Name', type: 'text' },
+    { label: 'Operation', fieldName: 'Operation__c', type: 'text' },
+    { label: 'Value', fieldName: 'Value__c', type: 'text' },
 ];
 
 
@@ -14,10 +17,25 @@ export default class CriteriaList extends LightningElement {
     error;
     columns = columns;
     criterias = [];
+    wiredAccFieldsLabels = [];
+
 
     @wire(getCriterias,{segmentId: "$recordId"})
     criterias;
 
+
+/*     @wire(getAllAccountFieldsLabels)
+    wiredAccountFields(result){
+        const {data , error} = result;
+        if (data) {
+            console.log('DATA ---> : ', data)
+            data.forEach(function(field){
+                this.wiredAccFieldsLabels.labels({ label: `${field}`, value: `${field}`})
+            })
+            //this.wiredAccFields = labels;
+            console.log('FIELDSHOWLIST ---> : ', this.wiredAccFieldsLabels)
+        }
+    } */
 
 /*     @api columns = columns;
     @api recordId;

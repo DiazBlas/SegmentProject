@@ -1,9 +1,12 @@
 <template>
-    <div style="height: 300px;">
+    <div style="height: 300px;" class="slds-box">
         <lightning-datatable
                 key-field="Id"
                 data={criterias.data}
-                columns={columns}>
+                columns={columns}
+                show-row-number-column
+                hide-checkbox-column
+                slds-box>
         </lightning-datatable>
     </div>
 </template>
