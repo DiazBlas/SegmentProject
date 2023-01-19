@@ -12,17 +12,19 @@ export default class CriteriaCreateTable extends LightningElement {
     @track records;
     error;
     @track isLoading = true;
-    @track deleteCriteriasIds = '';
+    //@track deleteCriteriasIds = '';
+    @track deleteCriteriasIds = [];
     wiredRecords;
-    wiredAccFieldsAndLabels = [];
+    @track wiredAccFieldsAndLabels = [];
     aux = [];
+    //@track isDisable = false;
 
     get operationOptions(){
         return [
-            { label: 'Equals', value: 'equals'},
-            { label: 'Greater Than', value: 'greater than'},
-            { label: 'Less Than', value: 'less than'},
-            { label: 'Contains', value: 'contains'},
+            { label: 'Equals', value: 'Equals'},
+            { label: 'Greater Than', value: 'Greater Than'},
+            { label: 'Less Than', value: 'Less Than'},
+            { label: 'Contains', value: 'Contains'},
         ]
     }
 
@@ -36,15 +38,30 @@ export default class CriteriaCreateTable extends LightningElement {
     }
 
     addCriteria() {
-        let newCriteria = {FieldName__c: "", Operation__c: "", Value__c: "", Segment__c: this.recordId};
+        let newCriteria = {Name: "", FieldName__c: "", Operation__c: "", Value__c: "", Segment__c: this.recordId};
         this.records = [...this.records, newCriteria];
     }
     
 /*     Error updating or refreshing records
     The following exception has occurred: Upsert failed. First exception on row 4; first error: REQUIRED_FIELD_MISSING, Required fields are missing: [Segment, Value, FieldName, Operation]: [Segment, Value, FieldName, Operation] */
 
+/*     get isDisable(){
+        console.log('Aca estoy dentro del isDisable --isLoading--: ', this.isLoading);
+        console.log('Aca estoy dentro del isDisable --this.wiredRecords.length--: ', this.wiredRecords);
+        console.log('Aca estoy dentro del isDisable --this.records.length--: ', this.records);
+        //return false;
+        if (this.isLoading){
+            console.log('aca estoy dentro del if')
+            return true;
+        }
+        else if (!this.records) {
+            console.log('aca estoy dentro del else')
+            return false;
+        } */
+        //return (this.isLoading || ( !this.records == undefined));
+    //}
     get isDisable(){
-        return (this.isLoading || (this.wiredRecords.data.length == 0 && this.records.length == 0));
+        return !(this.records && this.records.data && this.records.data.length);
     }
 
     handleIsLoading(isLoading) {
@@ -54,41 +71,43 @@ export default class CriteriaCreateTable extends LightningElement {
     //update table row values in list
     updateValues(event){
         let foundElement = this.records.find(ele => ele.Id == event.target.dataset.id);
-        if(event.target.name === 'Criteria Name'){
-            foundElement.Name = event.target.value;
+        if(event.target.name === 'Field Name'){
+            foundElement.FieldName__c = event.target.value;
+            console.log('FOUNDELEMENT--->: ', foundElement.FieldName__c)
+            let label = this.wiredAccFieldsAndLabels.find(opt => opt.value === event.target.value).label;
+            foundElement.Name = label;
+            console.log(label);
         } else if(event.target.name === 'Operation'){
             foundElement.Operation__c = event.target.value;
         } else if(event.target.name === 'Value'){
             foundElement.Value__c = event.target.value;
         }
     }
-
     
     //remove records from table
     handleDeleteAction(event){
-        let aux;
-        if(isNaN(event.target.dataset.id)){
-            this.deleteCriteriasIds = this.deleteCriteriasIds + ',' + event.target.dataset.id;
-        }
+        this.deleteCriteriasIds.push(event.target.dataset.id);
         this.records.splice(this.records.findIndex(row => row.Id === event.target.dataset.id), 1);
-/*         aux = this.records;
-        console.log("RECORDS ---->: ", aux) */
     }
 
      //get Segment's criteria records
     @wire(getCriterias, {segmentId : '$recordId'})  
     wiredCriterias(result) {
-        this.wiredRecords = result; // track the provisioned value
+        //this.wiredRecords = result; // track the provisioned value
         const { data, error } = result;
-        //console.log(result.data)
+        console.log('DATA', result.data)
         if(data) {
             this.records = JSON.parse(JSON.stringify(data));
             this.error = undefined;
             this.handleIsLoading(false);
         } else if(error) {
+            console.log('isLoading1 ---->: ',this.isLoading);
             this.error = error;
+            console.log('ERROR--->: ', this.error.body.message);
             this.records = undefined;
+            this.showToast('Error de permiso', error.body.message, 'Error', 'dismissable');
             this.handleIsLoading(false);
+            console.log('isLoading2 ---->: ',this.isLoading);
         }
     }
 
@@ -96,7 +115,7 @@ export default class CriteriaCreateTable extends LightningElement {
     wiredAccountFieldsLabels(result){
         const {data , error} = result;
         if (data) {
-            console.log('DATA ---> : ', data)
+            //console.log('DATA ---> : ', data)
             let labelsAndApiNames = JSON.parse(data);
             for (const key in labelsAndApiNames) {
                 //console.log('Llave : ', key, 'Valor : ', labelsAndApiNames[key]);
@@ -111,19 +130,10 @@ export default class CriteriaCreateTable extends LightningElement {
     //handle save and process dml 
     handleSaveAction(){
         this.handleIsLoading(true);
- 
-        if(this.deleteCriteriasIds !== ''){
-            this.deleteCriteriasIds = this.deleteCriteriasIds.substring(1);
-        }
- 
-        this.records.forEach(res =>{
-            if(!isNaN(res.Id)){
-                res.Id = null;
-            }
-        });
-         
-        dmlOnCriteria({data: this.records, removeContactIds : this.deleteCriteriasIds})
+
+        dmlOnCriteria({data: this.records, removeCriteriasIds : this.deleteCriteriasIds})
         .then( result => {
+            console.log('ACA estoy dentro de dmlOnCriteria THEN')
             this.handleIsLoading(false);
             refreshApex(this.wiredRecords);
             this.updateRecordView(this.recordId);
@@ -131,7 +141,7 @@ export default class CriteriaCreateTable extends LightningElement {
             this.showToast('Success', result, 'Success', 'dismissable');
         }).catch( error => {
             this.handleIsLoading(false);
-            console.log(error);
+            //console.log(error);
             this.showToast('Error updating or refreshing records', error.body.message, 'Error', 'dismissable');
         });
     }
@@ -143,6 +153,7 @@ export default class CriteriaCreateTable extends LightningElement {
             variant: variant,
             mode: mode
         });
+        //this.handleIsLoading(false);
         this.dispatchEvent(event);
     }
 

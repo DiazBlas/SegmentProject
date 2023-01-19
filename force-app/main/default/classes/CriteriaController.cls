@@ -4,11 +4,30 @@ public with sharing class CriteriaController {
         
     }
 
+
     @AuraEnabled(cacheable=true)
-    public static List<Criteria__c> getCriterias(String segmentId) {
-        List<Criteria__c> criterias = [SELECT Id, Name, FieldName__c, Operation__c, Value__c FROM Criteria__c WHERE Segment__c =: segmentId];
-        //System.debug(criterias);
-        return criterias;
+    public static Boolean hasAccess(){
+        try {
+            Boolean access = false;
+            if (Schema.SObjectType.Criteria__c.isAccessible()){
+                access = true;
+            }
+            //System.debug(access);
+            return access;
+        } catch (Exception e) {
+            throw new AuraHandledException(e.getMessage());
+        }
+    }
+
+    @AuraEnabled(cacheable=true)
+    public  static List<Criteria__c> getCriterias(String segmentId) {
+        List<Criteria__c> criterias = new List<Criteria__c>();
+        if (hasAccess()){
+            criterias = [SELECT Id, Name, FieldName__c, Operation__c, Value__c FROM Criteria__c WHERE Segment__c =: segmentId WITH SECURITY_ENFORCED];
+            return criterias;
+        } else {
+            throw new AuraHandledException('No tienes acceso a los criterios');
+        }
     }
 
     @AuraEnabled(cacheable=true)
@@ -21,7 +40,7 @@ public with sharing class CriteriaController {
             for (Schema.SObjectField field : mfields.values()) {
                 Schema.DescribeFieldResult fieldDescribe = field.getDescribe();
                 labelAndApiName.put(fieldDescribe.getLabel(), fieldDescribe.getName());
-            }
+            }   
             String jason = JSON.serialize(labelAndApiName);
 /*             List<String> accountFieldsLabels = new List<String>();
             for (Schema.SObjectField field : mfields.values()) {
@@ -39,22 +58,29 @@ public with sharing class CriteriaController {
     
 
     @AuraEnabled
-    public static string dmlOnCriteria(Object data, String removeCriteriaIds) {
-        List<Criteria__c> updateCriteria = (List<Criteria__c>) JSON.deserialize(JSON.serialize(data), List<Criteria__c>.class);
-        List<Criteria__c> deleteCriteria = new List<Criteria__c>();
+    public static string dmlOnCriteria(Object data, List<String> removeCriteriasIds) {
+        List<Criteria__c> updateCriterias = (List<Criteria__c>) JSON.deserialize(JSON.serialize(data), List<Criteria__c>.class);
+        List<Criteria__c> deleteCriterias = new List<Criteria__c>();
  
-        if(String.isNotBlank(removeCriteriaIds)){
-            List<Id> criteriaIds = removeCriteriaIds.split(',');
-            deleteCriteria = [SELECT Id FROM Criteria__c WHERE Id IN :criteriaIds];
-        }
- 
+        //if(String.isNotBlank(removeCriteriasIds)){
+            //List<Id> criteriaIds = removeCriteriaIds.split(',');
+        deleteCriterias = [SELECT Id FROM Criteria__c WHERE Id IN :removeCriteriasIds];
+        //}
+        // Convert List<String> to List<Id>
+        //List<String> stringList = removeCriteriasIds;
+/*         List<Id> idListToDelete = new List<Id>();
+        if (!removeCriteriasIds.isEmpty()) {
+            for (String id : removeCriteriasIds) {
+                idListToDelete.add(id);
+            }
+        } */
         try {
-            if(updateCriteria != null && !updateCriteria.isEmpty()){
-                upsert updateCriteria;
+            if(updateCriterias != null && !updateCriterias.isEmpty()){
+                upsert updateCriterias;
             }
  
-            if(deleteCriteria != null && !deleteCriteria.isEmpty()){    
-                delete deleteCriteria;
+            if(!deleteCriterias.isEmpty()){    
+                delete deleteCriterias;
             }
             return 'Success: Criteria(s) upsert/delete successfully';
         }

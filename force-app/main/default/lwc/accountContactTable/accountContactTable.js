@@ -69,7 +69,7 @@ export default class AccountContactTable extends LightningElement {
             this.showToast('Success', result, 'Success', 'dismissable');
         }).catch( error => {
             this.handleIsLoading(false);
-            console.log(error);
+            //console.log(error);
             this.showToast('Error updating or refreshing records', error.body.message, 'Error', 'dismissable');
         });
     }

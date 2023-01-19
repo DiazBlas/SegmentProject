@@ -5,9 +5,9 @@ import getAllAccountFieldsLabels from '@salesforce/apex/CriteriaController.getAl
 const columns = [
 /*     { label: 'Id', fieldName: 'Id', type: 'text' },
     { label: 'Criteria Name', fieldName: 'Name', type: 'text' }, */
-    { label: 'Criteria Name', fieldName: 'Name', type: 'text' },
-    { label: 'Operation', fieldName: 'Operation__c', type: 'text' },
-    { label: 'Value', fieldName: 'Value__c', type: 'text' },
+    { label: 'Criteria Name', fieldName: 'Name', type: 'text', hideDefaultActions: 'true', wrapText: true },
+    { label: 'Operation', fieldName: 'Operation__c', type: 'text', hideDefaultActions: 'true', wrapText: true },
+    { label: 'Value', fieldName: 'Value__c', type: 'text',hideDefaultActions: 'true', wrapText: true },
 ];
 
 
