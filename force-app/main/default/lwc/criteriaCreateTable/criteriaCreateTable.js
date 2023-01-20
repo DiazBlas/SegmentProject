@@ -29,9 +29,6 @@ export default class CriteriaCreateTable extends LightningElement {
     }
 
 
-
-
-
     //to close quick action
     closeAction(){
         this.dispatchEvent(new CloseActionScreenEvent());
@@ -60,9 +57,12 @@ export default class CriteriaCreateTable extends LightningElement {
         } */
         //return (this.isLoading || ( !this.records == undefined));
     //}
-    get isDisable(){
-        return !(this.records && this.records.data && this.records.data.length);
-    }
+/*     get isDisable(){
+        console.log('1: ',this.records );
+        //console.log('2: ',this.records.data );
+        //console.log('3: ',this.records.data.length );
+        return !(this.records);
+    } */
 
     handleIsLoading(isLoading) {
         this.isLoading = isLoading;
@@ -73,10 +73,10 @@ export default class CriteriaCreateTable extends LightningElement {
         let foundElement = this.records.find(ele => ele.Id == event.target.dataset.id);
         if(event.target.name === 'Field Name'){
             foundElement.FieldName__c = event.target.value;
-            console.log('FOUNDELEMENT--->: ', foundElement.FieldName__c)
+            //console.log('FOUNDELEMENT--->: ', foundElement.FieldName__c)
             let label = this.wiredAccFieldsAndLabels.find(opt => opt.value === event.target.value).label;
             foundElement.Name = label;
-            console.log(label);
+            //console.log(label);
         } else if(event.target.name === 'Operation'){
             foundElement.Operation__c = event.target.value;
         } else if(event.target.name === 'Value'){
@@ -93,7 +93,7 @@ export default class CriteriaCreateTable extends LightningElement {
      //get Segment's criteria records
     @wire(getCriterias, {segmentId : '$recordId'})  
     wiredCriterias(result) {
-        //this.wiredRecords = result; // track the provisioned value
+        this.wiredRecords = result; // track the provisioned value
         const { data, error } = result;
         console.log('DATA', result.data)
         if(data) {
