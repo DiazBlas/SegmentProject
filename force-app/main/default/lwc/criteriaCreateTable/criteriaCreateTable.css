@@ -1,3 +1,18 @@
-lightning-button {
-    border-radius: 0px;
+:host{
+    --slds-c-input-radius-border: 0rem;
+    --slds-c-button-radius-border: 0rem;
+    --slds-c-button-text-color: #333333;
 }
+
+.td-0p-right{
+    padding-right: 0px !important;
+
+}
+
+.td-0p-left{
+    padding-left: 0px !important;
+}
+
+/* .lb{
+    justify-content: flex-end !important;
+} */
