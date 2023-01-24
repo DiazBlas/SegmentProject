@@ -95,6 +95,17 @@ public with sharing class CriteriaController {
         }
     }
 
+    @AuraEnabled(cacheable=true)
+    public static List<String> getOperation () {
+        Schema.DescribeFieldResult F = Criteria__c.Operation__c.getDescribe();
+        List<Schema.PicklistEntry> P = F.getPicklistValues();
+        List<String> values = new List<String>();
+        for (Schema.PicklistEntry pick : P) {
+            values.add(pick.getValue());
+        }
+        return values;
+    }
+
     
 
     @AuraEnabled

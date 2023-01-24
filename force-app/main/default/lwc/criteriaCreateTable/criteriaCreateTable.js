@@ -5,6 +5,7 @@ import getCriterias from '@salesforce/apex/CriteriaController.getCriterias';
 import dmlOnCriteria from '@salesforce/apex/CriteriaController.dmlOnCriteria';
 import { refreshApex } from '@salesforce/apex';
 import getAllAccountFieldsLabels from '@salesforce/apex/CriteriaController.getAllAccountFieldsLabels';
+import getOperation from '@salesforce/apex/CriteriaController.getOperation';
 
 
 export default class CriteriaCreateTable extends LightningElement {
@@ -18,15 +19,16 @@ export default class CriteriaCreateTable extends LightningElement {
     @track wiredAccFieldsAndLabels = [];
     aux = [];
     //@track isDisable = false;
+    @track operationOptions;
 
-    get operationOptions(){
+/*     get operationOptions(){
         return [
             { label: 'Equals', value: 'Equals'},
             { label: 'Greater Than', value: 'Greater Than'},
             { label: 'Less Than', value: 'Less Than'},
             { label: 'Contains', value: 'Contains'},
         ]
-    }
+    } */
 
 
     //to close quick action
@@ -125,6 +127,13 @@ export default class CriteriaCreateTable extends LightningElement {
         }
     }
 
+    @wire(getOperation)
+    wiredGetOperation(result){
+        const {data, error} = result;
+        if (data){
+            this.operationOptions = data;
+        }
+    }
 
 
     //handle save and process dml 
