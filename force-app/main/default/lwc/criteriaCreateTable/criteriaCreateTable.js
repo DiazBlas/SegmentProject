@@ -19,7 +19,7 @@ export default class CriteriaCreateTable extends LightningElement {
     @track wiredAccFieldsAndLabels = [];
     aux = [];
     //@track isDisable = false;
-    @track operationOptions;
+    operationOptions = [];
 
 /*     get operationOptions(){
         return [
@@ -131,7 +131,9 @@ export default class CriteriaCreateTable extends LightningElement {
     wiredGetOperation(result){
         const {data, error} = result;
         if (data){
-            this.operationOptions = data;
+            data.forEach(element => {
+                this.operationOptions.push({ label: `${element}`, value: `${element}`});
+            });
         }
     }
 
