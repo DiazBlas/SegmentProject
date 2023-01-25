@@ -134,8 +134,6 @@ export default class CriteriaCreateTable extends LightningElement {
             data.forEach(element => {
                 this.operationOptions.push({ label: `${element}`, value: `${element}`});
             });
-            console.log('HOLA PIANOLA1...', data);
-            console.log('HOLA PIANOLA2', this.operationOptions);
         }
     }
 

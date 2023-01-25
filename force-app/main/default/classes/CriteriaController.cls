@@ -6,7 +6,7 @@ public with sharing class CriteriaController {
 
     //this method return a map with all criteria's name as a key and a boolean as a value, where the value as a true 
     //  indicates that the field is accesible and de false value indicates it is not
-    @AuraEnabled(cacheable=true)
+/*     @AuraEnabled(cacheable=true)
     public static Map<String, Boolean> allCriteriaFieldsAccess () {
         SObjectType criteria = Schema.getGlobalDescribe().get('Criteria__c');
         Map<String, Schema.SObjectField> mfields = criteria.getDescribe().fields.getMap();
@@ -21,10 +21,10 @@ public with sharing class CriteriaController {
             }
         }
         return fieldAccess;
-    }
+    } */
 
     //this method return a boolean if the current user has access to all of criteria's field
-    @AuraEnabled(cacheable=true)
+/*     @AuraEnabled(cacheable=true)
     public static Boolean accessTotalCriteriaFields (){
         Map<String,Boolean> criteriaFields = allCriteriaFieldsAccess();
             for (String key : criteriaFields.keySet()) {
@@ -33,10 +33,10 @@ public with sharing class CriteriaController {
                 }
             }
         return true;
-    }
+    } */
 
     //this method get a List with all the fields with access
-    public static List<String> criteriaFieldsWithAccess () {
+/*     public static List<String> criteriaFieldsWithAccess () {
         Map<String,Boolean> fields = allCriteriaFieldsAccess();
         List<String> fieldsWithAccess = new List<String>();
         for (String key : fields.keySet()){
@@ -45,11 +45,24 @@ public with sharing class CriteriaController {
             }
         }
         return fieldsWithAccess;
-    }
+    } */
 
     //this method return a boolean value if the current user has access to the criteria object and if the user has 
     //  access to all the criteria's fields
     @AuraEnabled(cacheable=true)
+    public static Boolean hasAccess(){
+        try {
+            Boolean access = false;
+            if (Schema.SObjectType.Criteria__c.isAccessible()){
+                access = true;
+            }
+            return access;
+        } catch (Exception e) {
+            throw new AuraHandledException(e.getMessage());
+        }
+    }
+
+/*     @AuraEnabled(cacheable=true)
     public static Boolean hasAccess(){
         try {
             Boolean access = false;
@@ -60,7 +73,8 @@ public with sharing class CriteriaController {
         } catch (Exception e) {
             throw new AuraHandledException(e.getMessage());
         }
-    }
+    } */
+
     //PREGUNTA QUE PASARIA SI TENGO ACCESO AL OBJETO PERO NO A TODOS SUS CAMPOS?
     //  SE PUEDE PONER UNA LISTA EN EL SELECT? [SELECT MILISTA FROM OBJETO]
     //  COMO SE UTILIZA EL FIELDS(ALL)?
@@ -68,8 +82,10 @@ public with sharing class CriteriaController {
     public  static List<Criteria__c> getCriterias(String segmentId) {
         List<Criteria__c> criterias = new List<Criteria__c>();
         if (hasAccess()){
-            List<String> fields = criteriaFieldsWithAccess(); 
-            criterias = [SELECT Id, Name, FieldName__c, Operation__c, Value__c FROM Criteria__c WHERE Segment__c =: segmentId WITH SECURITY_ENFORCED];
+            //List<String> fields = criteriaFieldsWithAccess(); 
+            SObjectAccessDecision securityDecision = Security.stripInaccessible(AccessType.READABLE, 
+                            [SELECT Id, Name, FieldName__c, Operation__c, Value__c FROM Criteria__c WHERE Segment__c =: segmentId WITH SECURITY_ENFORCED]);
+            criterias = securityDecision.getRecords();
             return criterias;
         } else {
             throw new AuraHandledException('No tienes acceso a los criterios');
@@ -103,10 +119,9 @@ public with sharing class CriteriaController {
         for (Schema.PicklistEntry pick : P) {
             values.add(pick.getValue());
         }
+        system.debug(values);
         return values;
     }
-
-    
 
     @AuraEnabled
     public static string dmlOnCriteria(Object data, List<String> removeCriteriasIds) {
