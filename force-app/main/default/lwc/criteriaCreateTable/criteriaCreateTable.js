@@ -1,5 +1,5 @@
 import { LightningElement, api, track, wire } from 'lwc';
-import { CloseActionScreenEvent } from 'lightning/actions';
+//import { CloseActionScreenEvent } from 'lightning/actions';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent'
 import getCriterias from '@salesforce/apex/CriteriaController.getCriterias';
 import dmlOnCriteria from '@salesforce/apex/CriteriaController.dmlOnCriteria';
@@ -13,7 +13,6 @@ export default class CriteriaCreateTable extends LightningElement {
     @track records;
     error;
     @track isLoading = true;
-    //@track deleteCriteriasIds = '';
     @track deleteCriteriasIds = [];
     wiredRecords;
     @track wiredAccFieldsAndLabels = [];
@@ -21,20 +20,13 @@ export default class CriteriaCreateTable extends LightningElement {
     //@track isDisable = false;
     @track operationOptions = [];
 
-/*     get operationOptions(){
-        return [
-            { label: 'Equals', value: 'Equals'},
-            { label: 'Greater Than', value: 'Greater Than'},
-            { label: 'Less Than', value: 'Less Than'},
-            { label: 'Contains', value: 'Contains'},
-        ]
+
+    //to close quick action
+/*     closeAction(){
+        this.dispatchEvent(new CloseActionScreenEvent());
     } */
 
 
-    //to close quick action
-    closeAction(){
-        this.dispatchEvent(new CloseActionScreenEvent());
-    }
 
     addCriteria() {
         let newCriteria = {Name: "", FieldName__c: "", Operation__c: "", Value__c: "", Segment__c: this.recordId};
@@ -66,6 +58,12 @@ export default class CriteriaCreateTable extends LightningElement {
         return !(this.records);
     } */
 
+    handleCancelAction(){
+        if(this.wiredRecords?.data){
+            this.records = JSON.parse(JSON.stringify(this.wiredRecords.data));
+       }
+    }
+
     handleIsLoading(isLoading) {
         this.isLoading = isLoading;
     }
@@ -75,10 +73,8 @@ export default class CriteriaCreateTable extends LightningElement {
         let foundElement = this.records.find(ele => ele.Id == event.target.dataset.id);
         if(event.target.name === 'Field Name'){
             foundElement.FieldName__c = event.target.value;
-            //console.log('FOUNDELEMENT--->: ', foundElement.FieldName__c)
             let label = this.wiredAccFieldsAndLabels.find(opt => opt.value === event.target.value).label;
             foundElement.Name = label;
-            //console.log(label);
         } else if(event.target.name === 'Operation'){
             foundElement.Operation__c = event.target.value;
         } else if(event.target.name === 'Value'){
@@ -117,13 +113,10 @@ export default class CriteriaCreateTable extends LightningElement {
     wiredAccountFieldsLabels(result){
         const {data , error} = result;
         if (data) {
-            //console.log('DATA ---> : ', data)
             let labelsAndApiNames = JSON.parse(data);
             for (const key in labelsAndApiNames) {
-                //console.log('Llave : ', key, 'Valor : ', labelsAndApiNames[key]);
                 this.wiredAccFieldsAndLabels.push({ label: `${key}`, value: `${labelsAndApiNames[key]}`})
             }
-            //console.log('labelsAndApiNames ---> : ', labelsAndApiNames)
         }
     }
 
@@ -137,7 +130,6 @@ export default class CriteriaCreateTable extends LightningElement {
         }
     }
 
-
     //handle save and process dml 
     handleSaveAction(){
         this.handleIsLoading(true);
@@ -147,8 +139,8 @@ export default class CriteriaCreateTable extends LightningElement {
             console.log('ACA estoy dentro de dmlOnCriteria THEN')
             this.handleIsLoading(false);
             refreshApex(this.wiredRecords);
-            this.updateRecordView(this.recordId);
-            this.closeAction();
+            //this.updateRecordView(this.recordId);
+            //this.closeAction();
             this.showToast('Success', result, 'Success', 'dismissable');
         }).catch( error => {
             this.handleIsLoading(false);
@@ -168,11 +160,11 @@ export default class CriteriaCreateTable extends LightningElement {
         this.dispatchEvent(event);
     }
 
-    updateRecordView() {
+/*     updateRecordView() {
         setTimeout(() => {
              eval("$A.get('e.force:refreshView').fire();");
         }, 3000); 
-     }
+     } */
 }
 
 
